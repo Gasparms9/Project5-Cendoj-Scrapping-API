@@ -2,6 +2,9 @@ ________________________________________________
 </br>
 
 # Project IV - Cendoj scrapping / API 
+
+<img src="https://miro.medium.com/max/1200/1*kfOsUxggG5wDbDcxgC0Uwg.png" width="600" align="center">
+
 ### Data managment from the Cendoj webpage to a SQL database.
 ### Creating an API to interact with the data
 #### Main technical tools: SQL, Regex, Flask, Python.
