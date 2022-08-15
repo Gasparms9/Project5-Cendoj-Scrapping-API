@@ -244,6 +244,8 @@ def downloading_sentence(url):
 from Config.sql_config import engine
 
 
+# other simpler functions to query the SQL Database.
+
 def get_all_from_sql():
     query = (
         f"SELECT ATS, ECLI, Cendoj_id, Tribunal, Sala, Sede, Seccion, Fecha, Numero_recurso, Juez, Letrado FROM \n"
