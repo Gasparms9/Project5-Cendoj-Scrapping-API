@@ -48,22 +48,20 @@ def regex_court_sentence_file():
 
         ## ROJ
 
-        m = re.search('[A][T][S] \d\d\d\d\d\S\d\d\d\d', text)
+
+        m = re.search('[R][o][j].*', text)
         if m:
-            roj = m.group(0)  ## string
-            ats = (roj.strip('ATS '))  ##INT
+            roj = m.group(0)
+            list_roj = roj.split("-")
+            roj = list_roj[0].strip()
+            ats = roj[9:]
+
+            ecli = list_roj[1].strip()
         else:
-            ats = np.nan
+            ecli = "couldn't find"
+            ats = "Couldn't find"
         print(ats)
 
-        ##ECLI
-        m = re.search('[E][C][L][I]\W[E][S]\W[T][S]\W\d\d\d\d\W\d\d\d\d\d[A]', text)
-        if m:
-            ecli = m.group(0)  ## string
-        else:
-            ecli = np.nan
-
-        print(ecli)
 
         ##cendoj id
         m = re.search('\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d', text)
@@ -71,7 +69,7 @@ def regex_court_sentence_file():
             cendoj_id = m.group(0)  ## string
             cendoj_id = int(cendoj_id)  ## int
         else:
-            cendoj_id = np.nan
+            cendoj_id = 0
         print(cendoj_id)
 
         ##organo
@@ -94,7 +92,7 @@ def regex_court_sentence_file():
             sede = m.group(0)  ## string
             sede = sede[6:]  ## int
         else:
-            sede = np.nan
+            sede = "Couldn't find"
         print(sede)
 
         # seccion
@@ -103,7 +101,7 @@ def regex_court_sentence_file():
             seccion = m.group(0)
             seccion = int(seccion[9:])
         else:
-            seccion = np.nan
+            seccion = "Couldn't find"
         print(seccion)
 
         # fecha
@@ -122,7 +120,7 @@ def regex_court_sentence_file():
             recurso_n = m.group(0)
             recurso_n = recurso_n[15:]
         else:
-            recurso_n = np.nan
+            recurso_n = "Couldn't find"
         print(recurso_n)
 
         # juez:
@@ -131,7 +129,7 @@ def regex_court_sentence_file():
             juez = m.group(0)
             juez = juez[8:]
         else:
-            juez = np.nan
+            juez = "Couldn't find"
         print(juez)
 
         # letrado
@@ -140,15 +138,15 @@ def regex_court_sentence_file():
             letrado = m.group(0)
             letrado = letrado.removeprefix('Letrado de la Administración de Justicia: Ilmo. Sr. D. ')
         else:
-            letrado = np.nan
+            letrado = "Couldn't find"
 
         # REMOVES FILE, PUT IT WHEN EVERYTHING ELSE WORKS.
 
-        #myfile = "./pdf/" + i
-        #if os.path.isfile(newstr):
-            #os.remove(newstr)
-        #else:  ## Show an error ##
-            #print("Error: %s file not found" % myfile)
+        myfile = "./pdf/" + i
+        if os.path.isfile(newstr):
+            os.remove(newstr)
+        else:  ## Show an error ##
+            print("Error: %s file not found" % myfile)
 
         data_sentence = (ats, ecli, cendoj_id, tribunal, sala, sede, seccion, fecha, recurso_n, juez, letrado, text)
 
@@ -212,7 +210,7 @@ def downloading_sentence(url):
     driver.get(href)
 
     # wait 4 seconds
-    time.sleep(4)
+    time.sleep(6)
 
     # downloads the pdf
 
@@ -231,8 +229,9 @@ def downloading_sentence(url):
     os.rename(old_file, new_file)
 
 
-
+downloading_sentence("https://www.poderjudicial.es/search/AN/openDocument/7093fde673b724fca0a8778d75e36f0d/20220803")
 data_sentence = regex_court_sentence_file()
-print(data_sentence)
 uploading_sql(data_sentence)
+
+
 
