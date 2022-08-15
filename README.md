@@ -24,7 +24,6 @@ ________________________________________________
 
 The Judicial Documentation Center (Cendoj) is the technical body of the General Council of the Judiciary that is responsible for the official publication of case law, as well as other competencies in the field of documentation and knowledge management services.
 
-For this project, i only need the 
 
 # Part One: Data Scrapping and Data Pipeline.
 
