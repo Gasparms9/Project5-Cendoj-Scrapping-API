@@ -54,7 +54,6 @@ def regex_court_sentence_file():
             list_roj = roj.split("-")
             roj = list_roj[0].strip()
             ats = roj[9:]
-
             ecli = list_roj[1].strip()
         else:
             ecli = "couldn't find"
