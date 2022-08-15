@@ -3,18 +3,14 @@ import random
 
 from bson.json_util import dumps
 from flask import Flask, jsonify
-
+from flask import Flask, redirect, url_for, request, render_template, make_response
 from Tools.mongo_tools import all_sentences_byname
 
-print(all_sentences_byname("Albus Dumbledore"))
+from Tools.sql_tools import *
+
 app = Flask(__name__)
 
 
-@app.route("/")
-def greeting():
-    return f"How are you doing"
-
-from Tools.sql_tools import *
 @app.route("/all")
 def all_from_sql():
     try:
@@ -22,6 +18,7 @@ def all_from_sql():
         return jsonify(lines)
     except Exception as e:
         return dumps({'error': str(e)})
+
 
 @app.route("/count/<variable>")
 def count_with_variable(variable):
@@ -31,6 +28,7 @@ def count_with_variable(variable):
     except Exception as e:
         return dumps({'error': str(e)})
 
+
 @app.route("/all/<variable>/<name>")
 def all_with_variable(variable, name):
     try:
@@ -39,27 +37,23 @@ def all_with_variable(variable, name):
     except Exception as e:
         return dumps({'error': str(e)})
 
-@app.route("/post/<url>")
-def post_sql(url):
-    try:
-        downloading_sentence(url)
-        data_sentence = regex_court_sentence_file()
-        uploading_sql(data_sentence)
+
+@app.route("/success")
+def success():
+    return "Gracias por tu contribución"
 
 
+@app.route("/post/", methods=['POST', 'GET'])
+def gfg():
+    if request.method == "POST":
+        # getting input with name = fname in HTML form
+        link = request.form.get("fname")
+        downloading_sentence(link)
+        data_sentencia = regex_court_sentence_file()
+        uploading_sql(data_sentencia)
+        return jsonify(data_sentencia)
+    return render_template("login.html")
 
-
-@app.route("/random-number")
-def random_number():
-    return str(random.choice(range(0, 11)))
-
-
-@app.route("/campus/<location>")
-def campus_location(location):
-    if location == "bcn":
-        return "Carrer Pamplona 96"
-    elif location == "mad":
-        return "Madrid"
 
 if __name__ == '__main__':
     app.run(debug=True)

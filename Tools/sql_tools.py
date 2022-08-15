@@ -170,7 +170,7 @@ def uploading_sql(data_sentence):
 
     # Rolling back in case of error
     conn.rollback()
-    print("Why not you fuckin bastard")
+
 
 
 def downloading_sentence(url):
@@ -264,4 +264,7 @@ def get_all_with_variable(variable, name):
     df = pd.read_sql_query(query, con=engine)
     return df.to_dict(orient='records')
 
-
+def return_last_sql():
+    query = f"""select * from sentencias_españa.sentencias Order by DESC Limit 1;"""
+    df = pd.read_sql_query(query, con=engine)
+    return df.to_dict(orient='records')
