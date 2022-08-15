@@ -13,7 +13,7 @@ from bs4 import BeautifulSoup
 import requests
 from pathlib import Path
 import requests
-from bs4 import BeautifulSoup
+
 import time
 
 from selenium import webdriver
@@ -48,7 +48,6 @@ def regex_court_sentence_file():
 
         ## ROJ
 
-
         m = re.search('[R][o][j].*', text)
         if m:
             roj = m.group(0)
@@ -61,7 +60,6 @@ def regex_court_sentence_file():
             ecli = "couldn't find"
             ats = "Couldn't find"
         print(ats)
-
 
         ##cendoj id
         m = re.search('\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d\d', text)
@@ -165,7 +163,6 @@ def uploading_sql(data_sentence):
         "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
     )
 
-
     cursor.execute(insert_stmt, data_sentence)
 
     # Commit your changes in the database
@@ -182,17 +179,33 @@ def downloading_sentence(url):
     :param url: string, url of the CENDOJ sentence
     :return: it doesn't return anything.
     """
-    # Url
+    # Url of the cendoj sentence page. It finds the href link of the direct download
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
     href = soup.find("object", {"id": "objtcontentpdf"})
     href = href.find("a", href=True)
     href = "https://www.poderjudicial.es" + href["href"]
 
-    path_loc = r"C:\Users\lenovo\PycharmProjects\pythonProject\pdf"
-    options = Options()
-    options.add_argument(r"[C:\Users\lenovo\PycharmProjects\pythonProject\chromedriver.exe]")
-    options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    # BEAUTIFUL SOUP ALTERNATIVE:
+    location = r"C:\Users\lenovo\PycharmProjects\pythonProject\pdf"
+
+    # defining a params dict for the parameters to be sent to the API
+    PARAMS = {'address': location}
+
+    # sending get request and saving the response as response object
+    i = requests.get(url=href, params=PARAMS)
+
+    # Write content in pdf file
+    with open(r"C:\Users\lenovo\PycharmProjects\pythonProject\pdf\sentence.pdf", 'wb') as f:
+        f.write(i.content)
+
+    # SELENIUM ALTERNATIVE:
+
+    # where to download selenium
+    # path_loc = r"C:\Users\lenovo\PycharmProjects\pythonProject\pdf"
+    # options = Options()
+    # options.add_argument(r"[C:\Users\lenovo\PycharmProjects\pythonProject\chromedriver.exe]")
+    # options.binary_location = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
 
     # general download pdf options
     chrome_prefs = {
@@ -201,18 +214,18 @@ def downloading_sentence(url):
         "download.open_pdf_in_system_reader": False,
         "profile.default_content_settings.popups": 0,
         # add location preference...
-        "download.default_directory": path_loc
+        # "download.default_directory": path_loc
     }
 
     # apply them
-    options.add_experimental_option("prefs", chrome_prefs)
-    driver = webdriver.Chrome(options=options)
-    driver.get(href)
-
-    # wait 4 seconds
-    time.sleep(6)
+    # options.add_experimental_option("prefs", chrome_prefs)
+    # driver = webdriver.Chrome(options=options)
 
     # downloads the pdf
+    # driver.get(href)
+
+    # wait 6 seconds
+    # time.sleep(6)
 
     # Location + name of the pdf
     m = re.search('\d\d\d\d\d\d\d\d', href)
@@ -229,9 +242,26 @@ def downloading_sentence(url):
     os.rename(old_file, new_file)
 
 
-downloading_sentence("https://www.poderjudicial.es/search/AN/openDocument/7093fde673b724fca0a8778d75e36f0d/20220803")
-data_sentence = regex_court_sentence_file()
-uploading_sql(data_sentence)
+from Config.sql_config import engine
 
+
+def get_all_from_sql():
+    query = (
+        f"SELECT ATS, ECLI, Cendoj_id, Tribunal, Sala, Sede, Seccion, Fecha, Numero_recurso, Juez, Letrado FROM \n"
+        f"        sentencias_españa.sentencias;")
+    df = pd.read_sql_query(query, con=engine)
+    return df.to_dict(orient='records')
+
+
+def get_count_with_variable(variable):
+    query = f"""SELECT {variable}, count({variable}) as 'Sentencias_Totales' FROM sentencias_españa.sentencias Group by {variable} Order by Sentencias_Totales DESC;"""
+    df = pd.read_sql_query(query, con=engine)
+    return df.to_dict(orient='records')
+
+
+def get_all_with_variable(variable, name):
+    query = f"""SELECT * FROM sentencias_españa.sentencias Where {variable} = '{name}' Order by Fecha DESC;"""
+    df = pd.read_sql_query(query, con=engine)
+    return df.to_dict(orient='records')
 
 
